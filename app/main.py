@@ -1,26 +1,19 @@
 from fastapi import FastAPI
-from api.routes import run_atm
-from app.core.logging_config import logger
- 
+from app.api.routes import router
+from app.dependencies.database import initialize_database
 
- 
-# Create the FastAPI application
-app = FastAPI(
-    title=" FastAPI Service",
-    description="A service for checking leap year or a prime number.",
-    version="1.0.0",
-    contact={
-        "name": "Development Team",
-        "email": "support@example.com",
-    },
-)
- 
-# Include the API routes
-app.include_router(router)
- 
+app = FastAPI(title="ATM System")
+
+# Initialize the database
+initialize_database()
+
+# Include API routes
+app.include_router(router, prefix="/api", tags=["ATM"])
+
+@app.get("/")
+def root():
+    return {"message": "Welcome to the ATM System"}
+
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8000)
- 
-
-
+    uvicorn.run("main:app", host="127.0.0.1", port=8000)

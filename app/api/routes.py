@@ -1,22 +1,32 @@
-from fastapi import FastAPI, APIRouter
-from app.controller.year_controller import is_leap_year, is_prime
-from app.controller.string_controller import split_and_join
-from app.dependencies.schema import YearRequest
- 
-app = FastAPI()
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+from app.dependencies.database import get_db
+from app.controller.account_controller import AccountController
+from app.core.config import CreateAccountRequest,DepositWithdrawRequest,BalanceTransactions
+
 router = APIRouter()
- 
-# Route for checking leap year
-@router.post("/check-leap-year/")
-async def check_leap_year(request: YearRequest):
-    return await is_leap_year(request.year)
- 
-# Route for checking prime year
-@router.post("/check-prime/")
-async def check_prime(request: YearRequest):
-    return await is_prime(request.year)
- 
-# Route for string split and join
-@router.post("/string-split-join/")
-async def string_split_join(request: YearRequest):
-    return await split_and_join(request.string)
+
+@router.post("/create-account")
+def create_account(request: CreateAccountRequest, db: Session = Depends(get_db)):
+    controller = AccountController(db)
+    return controller.create_account(request.username, request.pin, request.initial_deposit)
+
+@router.post("/deposit")
+def deposit(request: DepositWithdrawRequest, db: Session = Depends(get_db)):
+    controller = AccountController(db)
+    return controller.deposit(request.username, request.amount)
+
+@router.post("/withdraw")
+def withdraw(request: DepositWithdrawRequest, db: Session = Depends(get_db)):
+    controller = AccountController(db)
+    return controller.withdraw(request.username, request.amount)
+
+@router.get("/balance")
+def show_balance(request: BalanceTransactions, db: Session = Depends(get_db)):
+    controller = AccountController(db)
+    return controller.show_balance(request.username)
+
+@router.get("/transactions")
+def show_transactions(request: BalanceTransactions, db: Session = Depends(get_db)):
+    controller = AccountController(db)
+    return controller.show_transactions(request.username)
