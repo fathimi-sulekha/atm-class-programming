@@ -5,7 +5,6 @@ class CreateAccountRequest(BaseModel):
     username: str
     pin: str
     initial_deposit: float
-    amount: float
 
 class DepositWithdrawRequest(BaseModel):
     username: str
